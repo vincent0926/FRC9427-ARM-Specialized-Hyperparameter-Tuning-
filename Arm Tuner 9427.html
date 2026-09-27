@@ -1,0 +1,862 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Arm Tuner 9427</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#EEF1F3; --surface:#F9FAFB; --sunk:#E3E8EC; --ink:#14181C; --muted:#56606A; --rule:#CDD4DA;
+  --accent:#2446C4; --accent-soft:#DCE3FA; --amber:#B87400; --good:#1E7A4C; --warn:#B4480E; --bad:#B3261E;
+  --display:"Archivo","Noto Sans TC",system-ui,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0F1216; --surface:#161A20; --sunk:#1D232A; --ink:#E4E8EC; --muted:#98A2AC; --rule:#2B333C;
+    --accent:#8CA4FF; --accent-soft:#1F2A4E; --amber:#EAA83C; --good:#5CC48E; --warn:#F08A4B; --bad:#FF7A70;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0F1216; --surface:#161A20; --sunk:#1D232A; --ink:#E4E8EC; --muted:#98A2AC; --rule:#2B333C;
+  --accent:#8CA4FF; --accent-soft:#1F2A4E; --amber:#EAA83C; --good:#5CC48E; --warn:#F08A4B; --bad:#FF7A70;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75;padding-inline:20px;padding-block:0 64px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+@media (max-width:980px){.shell{grid-template-columns:minmax(0,1fr);gap:0}.side{display:none}}
+.side nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 28px);padding-top:28px;display:flex;flex-direction:column;gap:2px}
+.side .brand{font-family:var(--display);font-stretch:70%;font-weight:800;font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;color:var(--ink)}
+.side a{display:flex;gap:10px;text-decoration:none;color:var(--muted);font-size:14px;padding:5px 0;border-left:2px solid transparent;padding-left:10px}
+.side a:hover,.side a.on{color:var(--ink);border-left-color:var(--accent)}
+.side a span{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:22px}
+main{min-width:0}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:56px 40px;border-bottom:1px solid var(--rule)}
+@media (max-width:760px){.hero{grid-template-columns:minmax(0,1fr);padding-block:32px 28px}}
+.eyebrow{font-family:var(--display);font-stretch:75%;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-stretch:68%;font-weight:800;font-size:clamp(40px,5.6vw,76px);line-height:.95;margin:10px 0 18px;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{max-width:34em;color:var(--muted);margin:0 0 22px}
+.eq{font-family:var(--mono);font-size:clamp(14px,1.9vw,18px);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;overflow-x:auto;white-space:nowrap}
+.eq b{color:var(--accent);font-weight:600}
+.eq .c{color:var(--muted)}
+.diagram svg{width:100%;height:auto;max-width:460px;display:block;margin-inline:auto}
+
+/* sections */
+section{padding-block:56px 8px}
+.sec-head{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:baseline;margin-bottom:24px}
+.sec-no{font-family:var(--mono);font-size:13px;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:1px 7px}
+h2{font-family:var(--display);font-stretch:72%;font-weight:750;font-size:clamp(30px,4vw,42px);line-height:1.05;margin:0;text-wrap:balance}
+.sec-sub{grid-column:2;color:var(--muted);margin:0;max-width:44em}
+h3{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:20px;margin:32px 0 8px;text-wrap:balance}
+p,li{max-width:44em}
+.prose p{margin:0 0 14px}
+code,.m{font-family:var(--mono);font-size:.88em}
+p code,li code,td code{background:var(--sunk);padding:1px 5px;border-radius:3px}
+.note{border-left:3px solid var(--amber);background:var(--surface);padding:12px 16px;margin:18px 0;max-width:44em;font-size:15px}
+.note.warn{border-left-color:var(--warn)}
+.note strong{font-weight:700}
+.mathblock{font-family:var(--mono);font-size:14.5px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 18px;overflow-x:auto;line-height:1.9;margin:14px 0;max-width:44em;white-space:pre}
+.derive{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:8px}
+@media (max-width:760px){.derive{grid-template-columns:minmax(0,1fr)}}
+.derive .card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 18px}
+.derive .card h4{margin:0 0 6px;font-family:var(--mono);font-size:15px;color:var(--accent)}
+.derive .card p{margin:0 0 8px;font-size:15px}
+.derive .card .f{font-family:var(--mono);font-size:14px;background:var(--sunk);padding:8px 10px;border-radius:4px;overflow-x:auto;white-space:nowrap}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:start}
+@media (max-width:1100px){.calc{grid-template-columns:minmax(0,1fr)}}
+fieldset{border:1px solid var(--rule);border-radius:6px;padding:14px 16px 16px;margin:0 0 14px;background:var(--surface);min-width:0}
+legend{font-family:var(--display);font-stretch:80%;font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:0 6px;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+@media (max-width:460px){.fgrid{grid-template-columns:minmax(0,1fr)}}
+.fld{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fld label{font-size:13px;color:var(--muted);line-height:1.35}
+.fld label .u{font-family:var(--mono);font-size:11.5px}
+.fld input,.fld select{font-family:var(--mono);font-size:15px;color:var(--ink);background:var(--ground);border:1px solid var(--rule);border-radius:4px;padding:7px 9px;width:100%;min-width:0}
+.fld input:focus,.fld select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 2px var(--accent-soft)}
+.fld.full{grid-column:1/-1}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+.readout{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.readout .rh{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;border-bottom:1px solid var(--rule);gap:10px;flex-wrap:wrap}
+.readout .rh strong{font-family:var(--display);font-stretch:80%;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12.5px;white-space:nowrap}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+td.g{font-family:var(--mono);font-weight:600;color:var(--accent);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule);border-top:1px solid var(--rule)}
+@media (max-width:460px){.checks{grid-template-columns:minmax(0,1fr)}}
+.chk{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.chk .k{font-size:12.5px;color:var(--muted)}
+.chk .v{font-family:var(--mono);font-size:17px;font-variant-numeric:tabular-nums}
+.chk .s{font-size:12.5px}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:1px 8px;border-radius:99px;border:1px solid currentColor}
+.ok{color:var(--good)} .wn{color:var(--warn)} .bd{color:var(--bad)}
+.subtabs{display:flex;gap:6px}
+.subtabs button,.btn{font-family:var(--body);font-size:13px;border:1px solid var(--rule);background:var(--ground);color:var(--ink);border-radius:4px;padding:5px 12px;cursor:pointer}
+.subtabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:hover,.subtabs button:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+
+/* sim */
+.simwrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:1100px){.simwrap{grid-template-columns:minmax(0,1fr)}}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.plots{display:flex;flex-direction:column;gap:12px;min-width:0}
+.plot{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 12px 6px}
+.plot .pt{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.plot .lg{display:flex;gap:14px}
+.plot .lg i{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
+canvas{display:block;width:100%}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+@media (max-width:600px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* steps */
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;counter-reset:s}
+.steps>li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;padding:22px 0;border-top:1px solid var(--rule);max-width:none}
+.steps>li::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:var(--display);font-stretch:65%;font-weight:800;font-size:34px;line-height:1;color:var(--accent)}
+.steps h4{margin:0 0 6px;font-family:var(--display);font-stretch:85%;font-size:19px}
+.steps p,.steps ul{margin:0 0 8px;font-size:15.5px}
+.steps ul{padding-left:20px}
+.diag td:first-child{font-weight:500}
+pre.code{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0}
+.code .cm{color:var(--muted)} .code .kw{color:var(--accent)} .code .nu{color:var(--amber)}
+.codehead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 8px;gap:10px;flex-wrap:wrap}
+.codehead h3{margin:0}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="shell">
+<aside class="side"><nav id="toc">
+  <div class="brand">Arm Tuner · 9427</div>
+  <a href="#model"><span>01</span>物理模型</a>
+  <a href="#calc"><span>02</span>參數計算</a>
+  <a href="#sim"><span>03</span>模擬驗證</a>
+  <a href="#tune"><span>04</span>實機調整流程</a>
+  <a href="#diag"><span>05</span>症狀診斷</a>
+  <a href="#code"><span>06</span>程式碼</a>
+  <a href="#pitfalls"><span>07</span>常見錯誤</a>
+</nav></aside>
+
+<main>
+<header class="hero">
+  <div>
+    <div class="eyebrow">FRC 單關節手臂 · 前饋 + PID</div>
+    <h1>先算前饋，<br>再用 <em>PID</em> 收尾</h1>
+    <p class="lede">從馬達規格、齒輪比與手臂質量推導 kG、kV、kA，用 LQR 求 kP、kD 的起始值，在模擬中驗證，再照步驟上車調整。所有數字都附推導與單位。</p>
+    <div class="eq">V = <b>kS</b>·sgn(ω) + <b>kG</b>·cos θ + <b>kV</b>·ω + <b>kA</b>·α <span class="c">+ kP·e + kI·∫e + kD·ė</span></div>
+  </div>
+  <div class="diagram" aria-label="手臂受力示意圖">
+    <svg viewBox="0 0 420 300" role="img">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/></marker>
+        <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+      </defs>
+      <line x1="40" y1="200" x2="400" y2="200" stroke="var(--muted)" stroke-dasharray="4 5" stroke-width="1"/>
+      <text x="360" y="192" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="12">θ = 0</text>
+      <rect x="70" y="200" width="22" height="80" fill="var(--sunk)" stroke="var(--rule)"/>
+      <g transform="rotate(-32 81 200)">
+        <rect x="75" y="191" width="280" height="18" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <rect x="318" y="184" width="40" height="32" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <circle cx="210" cy="200" r="5" fill="var(--accent)"/>
+        <line x1="81" y1="224" x2="210" y2="224" stroke="var(--muted)" stroke-width="1" marker-end="url(#ah2)"/>
+        <text x="136" y="244" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="13" transform="rotate(32 140 240)">r</text>
+      </g>
+      <circle cx="81" cy="200" r="9" fill="var(--ink)"/>
+      <circle cx="81" cy="200" r="3" fill="var(--ground)"/>
+      <path d="M 161 200 A 80 80 0 0 0 148.8 157.6" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="168" y="186" fill="var(--accent)" font-family="JetBrains Mono,monospace" font-size="14">θ</text>
+      <line x1="195.5" y1="128.4" x2="195.5" y2="200" stroke="var(--amber)" stroke-width="2" marker-end="url(#ah)"/>
+      <text x="203" y="186" fill="var(--amber)" font-family="JetBrains Mono,monospace" font-size="13">m·g</text>
+      <text x="206" y="120" fill="var(--accent)" font-family="JetBrains Mono,monospace" font-size="12">CG</text>
+      <text x="30" y="292" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="12">τ_g = m·g·r·cos θ</text>
+      <text x="265" y="46" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-size="12">末端負載</text>
+    </svg>
+  </div>
+</header>
+
+<!-- 01 MODEL -->
+<section id="model">
+  <div class="sec-head"><span class="sec-no">01</span><h2>物理模型</h2><p class="sec-sub">前饋的每一項都對應一個物理量。理解來源，才知道哪個數字錯了。</p></div>
+  <div class="prose">
+    <p>把手臂視為繞樞軸轉動的剛體，θ 為手臂與<strong>水平面</strong>的夾角（向上為正），ω、α 為角速度與角加速度。手臂端的力矩平衡為：</p>
+    <div class="mathblock">J·α = τ_motor − m·g·r·cos θ − τ_friction</div>
+    <p>DC 馬達在穩態下滿足 <code>V = I·R + ω_m / Kv</code>、<code>τ_m = Kt·I</code>。設齒輪比 G（馬達轉數 ÷ 手臂轉數，減速時 G &gt; 1）、馬達數 N、傳動效率 η，則 <code>ω_m = G·ω</code>、<code>τ_motor = η·N·G·Kt·I</code>。把 I 解出來代入電壓式：</p>
+    <div class="mathblock">V = (R / (η·N·G·Kt))·(J·α + m·g·r·cos θ + τ_f) + (G / Kv)·ω</div>
+    <p>整理後恰好是 WPILib <code>ArmFeedforward</code> 與 Phoenix 6 <code>Arm_Cosine</code> 使用的形式，四個係數都有明確物理意義：</p>
+  </div>
+  <div class="derive">
+    <div class="card"><h4>kG　重力項</h4><p>在水平位置（cos θ = 1）剛好抵銷重力力矩所需的電壓。只乘上 cos θ，所以 θ 的零點必須是水平。</p><div class="f">kG = m·g·r · R / (η·N·G·Kt)</div></div>
+    <div class="card"><h4>kV　反電動勢項</h4><p>維持角速度 ω 所需克服的反電動勢。與負載無關，只由馬達與齒輪比決定。</p><div class="f">kV = G / Kv</div></div>
+    <div class="card"><h4>kA　慣量項</h4><p>產生角加速度 α 所需的電壓。J 為手臂對樞軸的轉動慣量，不是對質心。</p><div class="f">kA = J · R / (η·N·G·Kt)</div></div>
+    <div class="card"><h4>kS　靜摩擦項</h4><p>克服庫侖摩擦所需的電壓，方向隨運動方向變號。無法從規格推導，只能實測。</p><div class="f">kS = τ_f · R / (η·N·G·Kt)</div></div>
+  </div>
+  <div class="note"><strong>為什麼還要 PID：</strong>前饋只根據「期望的」θ、ω、α 算電壓，對模型誤差、摩擦變化、外力碰撞與電池壓降毫無反應。PID 看的是「實際」與期望的誤差，負責修正前饋沒算準的部分。前饋準，PID 就只需要小增益，系統更穩定、不易震盪。</div>
+  <div class="note warn"><strong>模型限制：</strong>重力項是非線性的（cos θ），所以 LQR 或極點配置只能處理線性部分（kV、kA），重力必須另外用 kG 前饋補償。若手臂裝有彈簧、氣壓缸輔助或重心會隨伸縮改變，cos θ 模型不再成立，需要另建模型或查表。</div>
+</section>
+
+<!-- 02 CALC -->
+<section id="calc">
+  <div class="sec-head"><span class="sec-no">02</span><h2>參數計算</h2><p class="sec-sub">輸入機構規格，得到前饋理論值、LQR 回授起始值與可行的運動曲線上限。預設值為示範機構，請換成你們的數字。</p></div>
+  <div class="calc">
+    <form id="calcForm" autocomplete="off">
+      <fieldset><legend>動力</legend>
+        <div class="fgrid">
+          <div class="fld full"><label for="motor">馬達型號</label>
+            <select id="motor">
+              <option value="krakenX60">Kraken X60</option>
+              <option value="krakenX60foc">Kraken X60 (FOC)</option>
+              <option value="krakenX44">Kraken X44</option>
+              <option value="falcon">Falcon 500</option>
+              <option value="falconfoc">Falcon 500 (FOC)</option>
+              <option value="neo">NEO</option>
+              <option value="vortex">NEO Vortex</option>
+            </select></div>
+          <div class="fld"><label for="nMotors">馬達數量 N</label><input id="nMotors" type="number" min="1" max="4" step="1" value="2"></div>
+          <div class="fld"><label for="gear">總減速比 G <span class="u">(馬達轉/手臂轉)</span></label><input id="gear" type="number" min="1" step="any" value="60"></div>
+          <div class="fld"><label for="eta">傳動效率 η <span class="u">(0–1)</span></label><input id="eta" type="number" min="0.3" max="1" step="0.01" value="0.9"></div>
+          <div class="fld"><label for="ilim">定子電流限制 <span class="u">(A / 顆)</span></label><input id="ilim" type="number" min="5" step="1" value="60"></div>
+        </div>
+        <p class="hint" id="motorInfo"></p>
+      </fieldset>
+      <fieldset><legend>手臂</legend>
+        <div class="fgrid">
+          <div class="fld"><label for="armMass">手臂本體質量 <span class="u">(kg)</span></label><input id="armMass" type="number" min="0" step="any" value="3"></div>
+          <div class="fld"><label for="armLen">手臂長度 L <span class="u">(m)</span></label><input id="armLen" type="number" min="0" step="any" value="0.6"></div>
+          <div class="fld"><label for="loadMass">末端負載質量 <span class="u">(kg)</span></label><input id="loadMass" type="number" min="0" step="any" value="1.5"></div>
+          <div class="fld"><label for="loadDist">負載到樞軸距離 <span class="u">(m)</span></label><input id="loadDist" type="number" min="0" step="any" value="0.6"></div>
+          <div class="fld full"><label for="kSin">kS 實測值 <span class="u">(V，未量測可先填 0)</span></label><input id="kSin" type="number" min="0" step="any" value="0.1"></div>
+        </div>
+        <p class="hint">本體視為均勻桿（質心在 L/2，J = m·L²/3），負載視為質點（J = m·d²）。若有 CAD，直接用 CAD 的質心距離與對樞軸慣量最準。</p>
+      </fieldset>
+      <fieldset><legend>回授（LQR）</legend>
+        <div class="fgrid">
+          <div class="fld"><label for="qPos">容許位置誤差 <span class="u">(°)</span></label><input id="qPos" type="number" min="0.1" step="any" value="15"></div>
+          <div class="fld"><label for="qVel">容許速度誤差 <span class="u">(°/s)</span></label><input id="qVel" type="number" min="1" step="any" value="150"></div>
+          <div class="fld"><label for="uMax">可用控制電壓 <span class="u">(V)</span></label><input id="uMax" type="number" min="0.5" max="12" step="any" value="10"></div>
+          <div class="fld"><label for="delay">量測延遲 <span class="u">(ms)</span></label><input id="delay" type="number" min="0" step="any" value="0"></div>
+        </div>
+        <p class="hint">這三個容許值是 Bryson 規則的權重：誤差達到該值時，願意付出該電壓修正。容許誤差越小，增益越大。與 WPILib SysId 的 LQR 計算方式相同。</p>
+      </fieldset>
+    </form>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="readout">
+        <div class="rh"><strong>前饋增益（理論值）</strong><span class="m" style="font-size:12px;color:var(--muted)" id="ffNote"></span></div>
+        <div class="tw"><table>
+          <thead><tr><th>增益</th><th style="text-align:right">WPILib（弧度）</th><th style="text-align:right">Phoenix 6（機構轉）</th></tr></thead>
+          <tbody id="ffBody"></tbody>
+        </table></div>
+      </div>
+      <div class="readout">
+        <div class="rh"><strong>回授起始值（LQR）</strong>
+          <div class="subtabs" role="group" aria-label="控制迴圈"><button type="button" data-loop="talon" aria-pressed="true">Talon 1 kHz</button><button type="button" data-loop="rio" aria-pressed="false">roboRIO 50 Hz</button></div></div>
+        <div class="tw"><table>
+          <thead><tr><th>增益</th><th style="text-align:right">WPILib（弧度）</th><th style="text-align:right">Phoenix 6（機構轉）</th></tr></thead>
+          <tbody id="fbBody"></tbody>
+        </table></div>
+        <p class="hint" style="padding:0 16px 12px">上車時先用此值的 25–50%，確認方向正確、沒有震盪後再往上加。背隙與感測器雜訊會讓實際可用的增益低於計算值。kI 建議從 0 開始。</p>
+      </div>
+      <div class="readout">
+        <div class="rh"><strong>可行性檢查與運動曲線建議</strong></div>
+        <div class="checks" id="checks"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 SIM -->
+<section id="sim">
+  <div class="sec-head"><span class="sec-no">03</span><h2>模擬驗證</h2><p class="sec-sub">以第 02 節的機構為「真實」手臂，加入電壓飽和、電流限制、摩擦、控制週期與量測延遲。可故意讓模型和實際不符，觀察 PID 如何補救。</p></div>
+  <div class="simwrap">
+    <form id="simForm" autocomplete="off" style="min-width:0">
+      <div class="presets">
+        <button type="button" class="btn primary" id="loadCalc">載入計算值</button>
+        <button type="button" class="btn" data-preset="pidonly">只有 PID</button>
+        <button type="button" class="btn" data-preset="ffonly">只有前饋</button>
+      </div>
+      <fieldset><legend>增益 · Phoenix 單位 rot</legend>
+        <div class="fgrid">
+          <div class="fld"><label for="s_kS">kS <span class="u">V</span></label><input id="s_kS" type="number" step="any"></div>
+          <div class="fld"><label for="s_kG">kG <span class="u">V</span></label><input id="s_kG" type="number" step="any"></div>
+          <div class="fld"><label for="s_kV">kV <span class="u">V/(rot/s)</span></label><input id="s_kV" type="number" step="any"></div>
+          <div class="fld"><label for="s_kA">kA <span class="u">V/(rot/s²)</span></label><input id="s_kA" type="number" step="any"></div>
+          <div class="fld"><label for="s_kP">kP <span class="u">V/rot</span></label><input id="s_kP" type="number" step="any"></div>
+          <div class="fld"><label for="s_kI">kI <span class="u">V/(rot·s)</span></label><input id="s_kI" type="number" step="any" value="0"></div>
+          <div class="fld"><label for="s_kD">kD <span class="u">V/(rot/s)</span></label><input id="s_kD" type="number" step="any"></div>
+          <div class="fld"><label for="s_loop">控制迴圈</label><select id="s_loop"><option value="talon">Talon 1 kHz</option><option value="rio">roboRIO 20 ms</option></select></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>運動</legend>
+        <div class="fgrid">
+          <div class="fld"><label for="s_from">起點 <span class="u">°</span></label><input id="s_from" type="number" step="any" value="-20"></div>
+          <div class="fld"><label for="s_to">目標 <span class="u">°</span></label><input id="s_to" type="number" step="any" value="95"></div>
+          <div class="fld"><label for="s_v">巡航速度 <span class="u">rot/s</span></label><input id="s_v" type="number" step="any" min="0.01"></div>
+          <div class="fld"><label for="s_a">加速度 <span class="u">rot/s²</span></label><input id="s_a" type="number" step="any" min="0.01"></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>真實世界的偏差</legend>
+        <div class="fgrid">
+          <div class="fld"><label for="s_mass">實際質量 ÷ 模型質量</label><input id="s_mass" type="number" step="0.05" min="0.2" value="1.15"></div>
+          <div class="fld"><label for="s_fric">實際摩擦 <span class="u">(V 等效)</span></label><input id="s_fric" type="number" step="any" min="0" value="0.15"></div>
+          <div class="fld"><label for="s_delay">量測延遲 <span class="u">ms</span></label><input id="s_delay" type="number" step="any" min="0" value="0"></div>
+          <div class="fld"><label for="s_dist">t=2.2 s 外力 <span class="u">N·m 向下</span></label><input id="s_dist" type="number" step="any" value="20"></div>
+        </div>
+      </fieldset>
+    </form>
+    <div class="plots">
+      <div class="metrics" id="metrics"></div>
+      <div class="plot"><div class="pt"><span>手臂角度（°）</span><span class="lg"><span><i style="border-color:var(--amber);border-top-style:dashed"></i>設定點</span><span><i style="border-color:var(--accent)"></i>實際</span></span></div><canvas id="cPos" height="240"></canvas></div>
+      <div class="plot"><div class="pt"><span>追蹤誤差（°）　設定點 − 實際</span></div><canvas id="cErr" height="130"></canvas></div>
+      <div class="plot"><div class="pt"><span>輸出電壓（V）與單顆定子電流（A）</span><span class="lg"><span><i style="border-color:var(--accent)"></i>電壓</span><span><i style="border-color:var(--muted)"></i>電流 ÷ 10</span></span></div><canvas id="cVolt" height="130"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 TUNE -->
+<section id="tune">
+  <div class="sec-head"><span class="sec-no">04</span><h2>實機調整流程</h2><p class="sec-sub">順序不能跳。每一步都建立在前一步正確的前提上；前面錯了，後面調到的數字都會補償錯誤的東西。</p></div>
+  <ol class="steps">
+    <li><div><h4>確認方向、單位與零點</h4>
+      <ul>
+        <li>正電壓要讓手臂往上（θ 增加）。用 Phoenix Tuner X 給小電壓確認，follower 的 <code>Follower</code> 對齊方向另外確認。</li>
+        <li>感測器讀值換算成手臂角度：<code>SensorToMechanismRatio = G</code>，轉一圈手臂讀值應為 1.0 rot。用量角器實測 90° 驗證。</li>
+        <li><strong>θ = 0 必須是水平</strong>。若零點在收納位置，要加上偏移（見第 07 節）。</li>
+        <li>先設好軟體限位與電流限制，再開始任何閉迴路測試。</li>
+      </ul></div></li>
+    <li><div><h4>量測 kG 與 kS</h4>
+      <p>把手臂扶到水平位置，所有增益歸零，用 <code>VoltageOut</code> 從 0 慢慢加電壓（每次 0.02 V）：</p>
+      <ul>
+        <li>記下手臂<strong>剛開始往上動</strong>的電壓 V<sub>up</sub>。</li>
+        <li>再從較高電壓慢慢降，記下手臂<strong>剛開始往下掉</strong>的電壓 V<sub>down</sub>。</li>
+        <li><code>kG = (V_up + V_down) / 2</code>，<code>kS = (V_up − V_down) / 2</code>。</li>
+      </ul>
+      <p>往上要克服重力 + 摩擦，往下是重力 − 摩擦，兩式相加相減即可分離。實測 kG 與第 02 節理論值差距超過 30%，通常代表質量、質心、齒輪比或單位有錯，先查清楚再往下。</p></div></li>
+    <li><div><h4>設定 kV、kA</h4>
+      <p>kV 幾乎只由馬達與齒輪比決定，理論值通常很準，可直接使用。kA 取決於轉動慣量，CAD 估算誤差較大。要更精確就跑 SysId（quasistatic + dynamic 各兩個方向），用 AdvantageKit 或 SignalLogger 記錄後匯入分析；SysId 的 Arm 模型會同時擬合 kS、kG、kV、kA。</p>
+      <p>驗證方式：只開前饋、PID 全為 0，跑一個慢速運動曲線。手臂應該大致跟上設定點，誤差不隨時間累積。若加速段落後、減速段超前，kA 偏小；若等速段持續落後，kV 或 kS 偏小。</p></div></li>
+    <li><div><h4>設定運動曲線上限</h4>
+      <p>巡航速度與加速度必須在馬達能力之內，否則控制器輸出飽和，前饋失效，誤差只能靠 PID 追，必然超越。第 02 節給的建議值已經預留電池壓降與重力的餘裕。</p>
+      <p>使用 Motion Magic 時建議設定 <code>MotionMagicJerk</code>，讓加速度在約 0.05–0.1 秒內建立，形成 S 曲線，減少結構晃動與齒輪衝擊。</p></div></li>
+    <li><div><h4>加入 kP</h4>
+      <p>從第 02 節 LQR 值的 25% 開始。每次加倍，直到靜止時出現小幅震盪或到位時超越，再退回上一個不震盪的值，最後乘以約 0.8 作為安全餘裕。</p>
+      <p>kP 提高會增加剛性與抗干擾能力，但也放大背隙與雜訊。若只能用很小的 kP 就開始震盪，問題多半在機構（背隙、皮帶鬆、結構彈性），不是增益。</p></div></li>
+    <li><div><h4>加入 kD</h4>
+      <p>若到位時有超越或殘餘晃動，加入 kD 提供阻尼，從 kP 的 1–3% 開始（Phoenix 單位）。在 Motion Magic 中，D 項作用在「設定速度 − 實際速度」，前饋準確時 kD 可以很小。kD 過大會讓馬達發出高頻嘯叫或抖動。</p></div></li>
+    <li><div><h4>最後才考慮 kI</h4>
+      <p>手臂的穩態誤差幾乎都來自 kG 不準或摩擦。優先修正 kG / kS。只有在負載會變（抓取物件前後重量差很多）且無法用多組 Slot 切換時，才加小量 kI，並務必設 iZone 或積分上限，避免積分飽和造成大幅超越。</p></div></li>
+    <li><div><h4>用紀錄檔驗證</h4>
+      <p>記錄設定點、實際位置、速度、輸出電壓、定子電流。重點看：誤差在運動中是否穩定在小範圍、電壓是否接近飽和、電流是否碰到限制。任何一項接近上限，就降低運動曲線，而不是繼續加增益。</p></div></li>
+  </ol>
+</section>
+
+<!-- 05 DIAG -->
+<section id="diag">
+  <div class="sec-head"><span class="sec-no">05</span><h2>症狀診斷</h2><p class="sec-sub">依照看到的現象找最可能的原因。排在前面的原因先檢查。</p></div>
+  <div class="readout"><div class="tw"><table class="diag">
+    <thead><tr><th>現象</th><th>最可能原因</th><th>處理方式</th></tr></thead>
+    <tbody>
+      <tr><td>靜止時停在目標下方，且水平附近誤差最大</td><td>kG 偏小</td><td>重做第 2 步量測；確認 θ 零點為水平</td></tr>
+      <tr><td>接近垂直時正常，接近水平時下垂</td><td>kG 偏小（cos θ 在垂直時為 0，所以只在水平看得出來）</td><td>提高 kG</td></tr>
+      <tr><td>往上運動落後、往下運動超前</td><td>kG 偏小或 cos θ 相位錯（零點偏移）</td><td>檢查零點；重新量 kG</td></tr>
+      <tr><td>靜止時差一點點就是到不了</td><td>kS 偏小，P 項輸出不足以克服靜摩擦</td><td>提高 kS 或 kP；確認沒有被軟體限位擋住</td></tr>
+      <tr><td>等速段持續落後</td><td>kV 偏小，或速度單位錯（rad 與 rot 差 2π）</td><td>核對單位後調整 kV</td></tr>
+      <tr><td>加速段落後、減速段衝過頭</td><td>kA 偏小，或運動曲線加速度太大導致電壓飽和</td><td>提高 kA；檢查電壓紀錄是否碰到 ±12 V</td></tr>
+      <tr><td>到位後來回擺動數次才停</td><td>kP 過大或 kD 不足</td><td>降低 kP 或加入 kD</td></tr>
+      <tr><td>靜止時高頻抖動、馬達嘯叫</td><td>kD 過大、雜訊，或背隙配合高 kP</td><td>降低 kD；改用手臂軸上的 CANcoder</td></tr>
+      <tr><td>慢慢爬過目標後才回來</td><td>kI 積分飽和</td><td>kI 設 0 或加 iZone；改修 kG</td></tr>
+      <tr><td>一動就往反方向衝到底</td><td>馬達或感測器方向反了（正回授）</td><td>立刻停用，檢查 Inverted 與感測器方向</td></tr>
+      <tr><td>在模擬正常、實機加速明顯變慢</td><td>碰到電流限制或電池壓降</td><td>看定子電流紀錄；降低加速度</td></tr>
+      <tr><td>過了頂點（θ &gt; 90°）後行為改變</td><td>正常現象：重力方向反轉，cos θ 變號；若仍失控則 kG 或零點錯</td><td>確認角度換算在整個行程都正確</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- 06 CODE -->
+<section id="code">
+  <div class="sec-head"><span class="sec-no">06</span><h2>程式碼</h2><p class="sec-sub">依第 02 節的數值自動產生。常數請放進你們的 Constants，未實測的值保留 TODO。</p></div>
+  <div class="codehead"><h3>Phoenix 6 · Motion Magic（Talon FX 板上 1 kHz）</h3><button class="btn" type="button" data-copy="codeCtre">複製</button></div>
+  <pre class="code" id="codeCtre"></pre>
+  <div class="codehead"><h3>WPILib · ProfiledPIDController + ArmFeedforward（roboRIO 20 ms）</h3><button class="btn" type="button" data-copy="codeWpi">複製</button></div>
+  <pre class="code" id="codeWpi"></pre>
+  <div class="note">WPILib 的 <code>ArmFeedforward</code> 必須以<strong>設定點</strong>（<code>getSetpoint()</code>）的位置與速度計算，不是最終目標（goal），也不是目前量測值。用量測值會讓前饋跟著誤差一起跑，等於多了一個不受控的回授迴路。</div>
+</section>
+
+<!-- 07 PITFALLS -->
+<section id="pitfalls">
+  <div class="sec-head"><span class="sec-no">07</span><h2>常見錯誤</h2><p class="sec-sub">這些錯誤不會出現編譯錯誤，但會讓所有調整白費。</p></div>
+  <div class="derive">
+    <div class="card"><h4>弧度與轉數混用</h4><p>WPILib 用弧度，Phoenix 6 用轉（rot）。kV、kA、kP、kD 在兩者間差 2π 倍。kG、kS 單位是伏特，不受影響。</p></div>
+    <div class="card"><h4>零點不是水平</h4><p><code>Arm_Cosine</code> 直接對感測器位置取 cos。若 0 在收納位置（例如 −60°），重力補償在每個角度都錯。可改用絕對編碼器偏移，或在支援的 Phoenix 版本設定 <code>GravityArmPositionOffset</code>。</p></div>
+    <div class="card"><h4>齒輪比方向與感測器位置</h4><p>內建轉子感測器用 <code>SensorToMechanismRatio = G</code>。若使用 FusedCANcoder，CANcoder 在手臂軸上時，<code>RotorToSensorRatio = G</code>、<code>SensorToMechanismRatio = 1</code>。</p></div>
+    <div class="card"><h4>用積分補重力</h4><p>kI 能消除穩態誤差，但反應慢，且運動中會累積、到位後超越。重力是已知且可計算的，應由 kG 處理。</p></div>
+    <div class="card"><h4>運動曲線超過馬達能力</h4><p>設定點衝太快時控制器輸出被限制在 12 V，前饋失去作用，看起來像「PID 調不好」。先看電壓紀錄，再動增益。</p></div>
+    <div class="card"><h4>忽略背隙</h4><p>感測器在馬達端時，齒輪背隙夾在感測器與手臂之間，高 kP 會在背隙內來回撞擊。把 CANcoder 裝在手臂軸上可大幅改善。</p></div>
+  </div>
+</section>
+
+<footer>
+  計算採用 WPILib <code>DCMotor</code> 的馬達規格（12 V 標稱）。所有結果皆為理論起始值，實機請依第 04 節流程驗證。模擬器使用簡化模型：忽略電感、電池內阻、結構彈性與背隙。
+</footer>
+</main>
+</div>
+
+<script>
+(function(){
+"use strict";
+const TAU = 2*Math.PI, g0 = 9.80665, D2R = Math.PI/180, R2D = 180/Math.PI;
+// WPILib DCMotor specs @12V: stall torque (N·m), stall current (A), free current (A), free speed (rpm)
+const MOTORS = {
+  krakenX60:   {name:"Kraken X60",        ts:7.09, is:366, fi:2.0, rpm:6000},
+  krakenX60foc:{name:"Kraken X60 (FOC)",  ts:9.37, is:483, fi:2.0, rpm:5800},
+  krakenX44:   {name:"Kraken X44",        ts:4.05, is:275, fi:1.4, rpm:7530},
+  falcon:      {name:"Falcon 500",        ts:4.69, is:257, fi:1.5, rpm:6380},
+  falconfoc:   {name:"Falcon 500 (FOC)",  ts:5.84, is:304, fi:1.5, rpm:6080},
+  neo:         {name:"NEO",               ts:2.60, is:105, fi:1.8, rpm:5676},
+  vortex:      {name:"NEO Vortex",        ts:3.60, is:211, fi:3.6, rpm:6784}
+};
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat($(id).value); return isFinite(v) ? v : 0; };
+const fmt = (x, d=3) => {
+  if (!isFinite(x)) return "—";
+  const a = Math.abs(x);
+  if (a !== 0 && (a < 1e-3 || a >= 1e5)) return x.toExponential(2);
+  return x.toFixed(d);
+};
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- 2x2 linear algebra ---------- */
+const mm = (A,B) => [[A[0][0]*B[0][0]+A[0][1]*B[1][0], A[0][0]*B[0][1]+A[0][1]*B[1][1]],
+                     [A[1][0]*B[0][0]+A[1][1]*B[1][0], A[1][0]*B[0][1]+A[1][1]*B[1][1]]];
+const tr = A => [[A[0][0],A[1][0]],[A[0][1],A[1][1]]];
+const add = (A,B) => [[A[0][0]+B[0][0],A[0][1]+B[0][1]],[A[1][0]+B[1][0],A[1][1]+B[1][1]]];
+const sub = (A,B) => [[A[0][0]-B[0][0],A[0][1]-B[0][1]],[A[1][0]-B[1][0],A[1][1]-B[1][1]]];
+
+// Exact ZOH discretization of x=[θ,ω], ẋ=[ω, -(kV/kA)ω + u/kA]
+function discretize(kV,kA,dt){
+  const a = -kV/kA, e = Math.exp(a*dt);
+  const Ad = [[1,(e-1)/a],[0,e]];
+  const Bd = [(e-1-a*dt)/(a*a)/kA, (e-1)/a/kA];
+  return {Ad,Bd};
+}
+// Discrete LQR via Riccati iteration; returns K = [kθ, kω] (V/rad, V/(rad/s))
+function dlqr(Ad,Bd,Q,R){
+  let P = [[Q[0][0],0],[0,Q[1][1]]];
+  let K = [0,0];
+  for (let i=0;i<200000;i++){
+    const PB = [P[0][0]*Bd[0]+P[0][1]*Bd[1], P[1][0]*Bd[0]+P[1][1]*Bd[1]];
+    const BtPB = Bd[0]*PB[0]+Bd[1]*PB[1];
+    const BtPA = [PB[0]*Ad[0][0]+PB[1]*Ad[1][0], PB[0]*Ad[0][1]+PB[1]*Ad[1][1]];
+    const s = R + BtPB;
+    const Kn = [BtPA[0]/s, BtPA[1]/s];
+    const AtPA = mm(tr(Ad), mm(P,Ad));
+    const corr = [[BtPA[0]*Kn[0],BtPA[0]*Kn[1]],[BtPA[1]*Kn[0],BtPA[1]*Kn[1]]];
+    const Pn = sub(add(Q,AtPA), corr);
+    const diff = Math.abs(Pn[0][0]-P[0][0])+Math.abs(Pn[0][1]-P[0][1])+Math.abs(Pn[1][1]-P[1][1]);
+    P = [[Pn[0][0],(Pn[0][1]+Pn[1][0])/2],[(Pn[0][1]+Pn[1][0])/2,Pn[1][1]]];
+    K = Kn;
+    if (diff < 1e-10*Math.max(1,Math.abs(P[0][0]))) break;
+  }
+  return K;
+}
+// Real matrix power M^p for 2x2 (Sylvester formula, complex-safe) — used for latency compensation K·(A−BK)^(delay/dt)
+function cpx(re,im){return {re,im};}
+const cadd=(a,b)=>cpx(a.re+b.re,a.im+b.im), csub=(a,b)=>cpx(a.re-b.re,a.im-b.im),
+      cmul=(a,b)=>cpx(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re),
+      cdiv=(a,b)=>{const d=b.re*b.re+b.im*b.im;return cpx((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d);},
+      cpow=(z,p)=>{const r=Math.hypot(z.re,z.im); if(r===0) return cpx(0,0); const th=Math.atan2(z.im,z.re); const rp=Math.pow(r,p); return cpx(rp*Math.cos(p*th),rp*Math.sin(p*th));};
+function mpow(M,p){
+  if (p===0) return [[1,0],[0,1]];
+  const t = M[0][0]+M[1][1], d = M[0][0]*M[1][1]-M[0][1]*M[1][0];
+  const disc = t*t/4 - d;
+  const sq = disc>=0 ? cpx(Math.sqrt(disc),0) : cpx(0,Math.sqrt(-disc));
+  const l1 = cadd(cpx(t/2,0),sq), l2 = csub(cpx(t/2,0),sq);
+  const f1 = cpow(l1,p), f2 = cpow(l2,p);
+  const Mc = [[cpx(M[0][0],0),cpx(M[0][1],0)],[cpx(M[1][0],0),cpx(M[1][1],0)]];
+  const out = [[0,0],[0,0]];
+  const gap = Math.hypot(l1.re-l2.re,l1.im-l2.im);
+  for (let i=0;i<2;i++) for (let j=0;j<2;j++){
+    const I = i===j ? 1 : 0;
+    let v;
+    if (gap < 1e-9){
+      const fp = cmul(cpx(p,0), cpow(l1,p-1));
+      v = cadd(cmul(f1,cpx(I,0)), cmul(fp, csub(Mc[i][j], cpx(l1.re*I,l1.im*I))));
+    } else {
+      const dl = csub(l1,l2);
+      const a = cdiv(cmul(f1, csub(Mc[i][j], cpx(l2.re*I,l2.im*I))), dl);
+      const b = cdiv(cmul(f2, csub(Mc[i][j], cpx(l1.re*I,l1.im*I))), dl);
+      v = csub(a,b);
+    }
+    out[i][j] = v.re;
+  }
+  return out;
+}
+function lqrGains(kV,kA,dt,qPos,qVel,u,delay){
+  const {Ad,Bd} = discretize(kV,kA,dt);
+  const Q = [[1/(qPos*qPos),0],[0,1/(qVel*qVel)]];
+  let K = dlqr(Ad,Bd,Q,1/(u*u));
+  if (delay > 0){
+    const BK = [[Bd[0]*K[0],Bd[0]*K[1]],[Bd[1]*K[0],Bd[1]*K[1]]];
+    const P = mpow(sub(Ad,BK), delay/dt);
+    K = [K[0]*P[0][0]+K[1]*P[1][0], K[0]*P[0][1]+K[1]*P[1][1]];
+  }
+  return K;
+}
+
+/* ---------- calculator ---------- */
+const CALC_IDS = ["motor","nMotors","gear","eta","ilim","armMass","armLen","loadMass","loadDist","kSin","qPos","qVel","uMax","delay"];
+let loopSel = "talon";
+let R = null; // latest results
+
+function compute(){
+  const m = MOTORS[$("motor").value];
+  const N = Math.max(1, Math.round(num("nMotors"))), G = Math.max(1e-6, num("gear")), eta = Math.min(1, Math.max(0.05, num("eta")));
+  const Ilim = Math.max(1, num("ilim"));
+  const ma = num("armMass"), L = num("armLen"), ml = num("loadMass"), d = num("loadDist");
+  const kS = num("kSin");
+  const Rw = 12/m.is, Kt = m.ts/m.is, Kv = (m.rpm*TAU/60)/(12 - m.fi*Rw);
+  const mr = ma*L/2 + ml*d, M = ma + ml;
+  const J = ma*L*L/3 + ml*d*d;
+  const den = eta*N*G*Kt;
+  const kG = mr*g0*Rw/den, kV = G/Kv, kA = J*Rw/den;
+  const tauG = mr*g0;
+  const iHold = tauG/den;                      // A per motor at horizontal
+  const stallArm = eta*N*G*m.ts;
+  const wMax = (12 - kS - kG)/kV;              // rad/s, worst case (lifting at horizontal)
+  const aMaxV = (12 - kS - kG)/kA;             // rad/s² at ω=0, horizontal
+  const aMaxI = (eta*N*G*Kt*Ilim - tauG)/J;    // rad/s² limited by stator current
+  const vProf = 0.7*wMax;
+  const aProfV = 0.5*(12 - kS - kG - kV*vProf)/kA;
+  const aProf = Math.max(0, Math.min(aProfV, 0.8*aMaxI));
+  const qP = num("qPos")*D2R, qV = num("qVel")*D2R, u = Math.max(0.1, num("uMax")), delay = Math.max(0, num("delay"))/1000;
+  const Kt1 = lqrGains(kV,kA,0.001,qP,qV,u,delay);
+  const Kr  = lqrGains(kV,kA,0.020,qP,qV,u,delay);
+  R = {m,N,G,eta,Ilim,Rw,Kt,Kv,mr,M,J,kG,kV,kA,kS,tauG,iHold,stallArm,wMax,aMaxV,aMaxI,vProf,aProf,K:{talon:Kt1,rio:Kr},den};
+  render();
+  const s = {}; CALC_IDS.forEach(id => s[id] = $(id).value); s.loop = loopSel; store.set("armtuner.calc", s);
+}
+
+function row(name, rad, rot, unitRad, unitRot){
+  return `<tr><td class="g">${name}</td><td class="n">${rad} <span style="color:var(--muted);font-size:11.5px">${unitRad}</span></td><td class="n">${rot} <span style="color:var(--muted);font-size:11.5px">${unitRot}</span></td></tr>`;
+}
+function render(){
+  const r = R;
+  $("motorInfo").textContent = `R = ${fmt(r.Rw,4)} Ω　Kt = ${fmt(r.Kt,4)} N·m/A　Kv = ${fmt(r.Kv,2)} rad/s/V（${fmt(r.Kv*60/TAU,1)} rpm/V）`;
+  $("ffNote").textContent = `J = ${fmt(r.J,3)} kg·m²　質心 ${fmt(r.mr/Math.max(r.M,1e-9),3)} m`;
+  $("ffBody").innerHTML =
+    row("kS", fmt(r.kS,3), fmt(r.kS,3), "V", "V") +
+    row("kG", fmt(r.kG,3), fmt(r.kG,3), "V", "V") +
+    row("kV", fmt(r.kV,4), fmt(r.kV*TAU,3), "V·s/rad", "V/(rot/s)") +
+    row("kA", fmt(r.kA,5), fmt(r.kA*TAU,4), "V·s²/rad", "V/(rot/s²)");
+  const K = r.K[loopSel];
+  $("fbBody").innerHTML =
+    row("kP", fmt(K[0],2), fmt(K[0]*TAU,2), "V/rad", "V/rot") +
+    row("kD", fmt(K[1],3), fmt(K[1]*TAU,3), "V·s/rad", "V/(rot/s)") +
+    row("kI", "0", "0", "", "");
+  const holdPct = r.tauG/r.stallArm*100;
+  const ic = r.iHold < 20 ? "ok" : r.iHold < 40 ? "wn" : "bd";
+  const hc = holdPct < 25 ? "ok" : holdPct < 50 ? "wn" : "bd";
+  const kc = r.kG < 6 ? "ok" : r.kG < 9 ? "wn" : "bd";
+  const tauM = r.kA/r.kV;
+  $("checks").innerHTML = [
+    ["水平保持電流（每顆）", fmt(r.iHold,1)+" A", `<span class="pill ${ic}">${ic==="ok"?"持續可行":ic==="wn"?"注意發熱":"過熱風險"}</span>`],
+    ["重力力矩 ÷ 失速力矩", fmt(holdPct,1)+" %", `<span class="pill ${hc}">${hc==="ok"?"餘裕充足":hc==="wn"?"餘裕偏低":"減速比不足"}</span>`],
+    ["kG 占 12 V 比例", fmt(r.kG/12*100,1)+" %", `<span class="pill ${kc}">${kc==="ok"?"正常":kc==="wn"?"加速空間少":"幾乎無法加速"}</span>`],
+    ["機械時間常數 kA/kV", fmt(tauM*1000,1)+" ms", `<span style="color:var(--muted)">越小代表越快達到穩態速度</span>`],
+    ["最大速度（水平上舉）", fmt(r.wMax*R2D,0)+" °/s", `<span style="color:var(--muted)">= ${fmt(r.wMax/TAU,2)} rot/s，12 V 全開</span>`],
+    ["最大加速度（電流限制）", fmt(r.aMaxI*R2D,0)+" °/s²", `<span style="color:var(--muted)">電壓限制為 ${fmt(r.aMaxV*R2D,0)} °/s²</span>`],
+    ["建議巡航速度", fmt(r.vProf/TAU,3)+" rot/s", `<span style="color:var(--muted)">最大速度的 70%，${fmt(r.vProf*R2D,0)} °/s</span>`],
+    ["建議加速度", fmt(r.aProf/TAU,2)+" rot/s²", `<span style="color:var(--muted)">留一半電壓餘裕，且 ≤ 電流上限 80%</span>`]
+  ].map(c => `<div class="chk"><span class="k">${c[0]}</span><span class="v">${c[1]}</span><span class="s">${c[2]}</span></div>`).join("");
+  renderCode();
+}
+
+/* ---------- code generation ---------- */
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function hl(src){
+  return esc(src)
+    .replace(/(\/\/[^\n]*)/g,'\u0001$1\u0002')
+    .split(/(\u0001[^\u0002]*\u0002)/).map(part => part.startsWith("\u0001")
+      ? `<span class="cm">${part.slice(1,-1)}</span>`
+      : part.replace(/\b(new|final|double|var|private|static|public|return|void)\b/g,'<span class="kw">$1</span>')
+            .replace(/\b(\d+\.\d+|\d+)\b/g,'<span class="nu">$1</span>')).join("");
+}
+function renderCode(){
+  const r = R, Kt = r.K.talon, Kr = r.K.rio;
+  const f = (x,d) => (isFinite(x) ? x.toFixed(d) : "0.0");
+  const ctre =
+`// ${r.N}× ${r.m.name}，減速比 ${r.G}:1，由 Arm Tuner 計算
+var cfg = new TalonFXConfiguration();
+cfg.Feedback.SensorToMechanismRatio = ${f(r.G,3)}; // TODO: 以量角器驗證 1 rot = 360°
+cfg.CurrentLimits.StatorCurrentLimit = ${f(r.Ilim,0)};
+cfg.CurrentLimits.StatorCurrentLimitEnable = true;
+
+cfg.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // 位置 0 必須是水平
+cfg.Slot0.kS = ${f(r.kS,3)}; // TODO: 實測 (V_up − V_down)/2
+cfg.Slot0.kG = ${f(r.kG,3)}; // TODO: 實測 (V_up + V_down)/2，理論值
+cfg.Slot0.kV = ${f(r.kV*TAU,3)}; // V/(rot/s)
+cfg.Slot0.kA = ${f(r.kA*TAU,4)}; // V/(rot/s²)
+cfg.Slot0.kP = ${f(Kt[0]*TAU*0.5,2)}; // TODO: LQR 值 ${f(Kt[0]*TAU,2)} 的 50%，逐步提高
+cfg.Slot0.kI = 0.0;
+cfg.Slot0.kD = ${f(Kt[1]*TAU*0.5,3)}; // TODO: LQR 值 ${f(Kt[1]*TAU,3)} 的 50%
+
+cfg.MotionMagic.MotionMagicCruiseVelocity = ${f(r.vProf/TAU,3)}; // rot/s
+cfg.MotionMagic.MotionMagicAcceleration = ${f(r.aProf/TAU,2)};   // rot/s²
+cfg.MotionMagic.MotionMagicJerk = ${f(r.aProf/TAU*10,1)};        // 約 0.1 s 建立加速度
+
+leader.getConfigurator().apply(cfg);
+
+private final MotionMagicVoltage mmRequest = new MotionMagicVoltage(0).withSlot(0);
+
+public void setAngle(double degrees) {
+  leader.setControl(mmRequest.withPosition(degrees / 360.0)); // 機構轉
+}`;
+  const wpi =
+`// 單位：弧度、秒、伏特。控制週期 0.02 s
+private static final double ARM_KS = ${f(r.kS,3)}; // TODO: 實測
+private static final double ARM_KG = ${f(r.kG,3)}; // TODO: 實測
+private static final double ARM_KV = ${f(r.kV,4)}; // V·s/rad
+private static final double ARM_KA = ${f(r.kA,5)}; // V·s²/rad
+private static final double ARM_KP = ${f(Kr[0]*0.5,2)}; // TODO: LQR ${f(Kr[0],2)} 的 50%
+private static final double ARM_KD = ${f(Kr[1]*0.5,3)}; // TODO: LQR ${f(Kr[1],3)} 的 50%
+private static final double ARM_MAX_VEL = ${f(r.vProf,3)}; // rad/s
+private static final double ARM_MAX_ACC = ${f(r.aProf,2)}; // rad/s²
+
+private final ProfiledPIDController pid = new ProfiledPIDController(
+    ARM_KP, 0.0, ARM_KD,
+    new TrapezoidProfile.Constraints(ARM_MAX_VEL, ARM_MAX_ACC));
+private final ArmFeedforward ff = new ArmFeedforward(ARM_KS, ARM_KG, ARM_KV, ARM_KA);
+
+public void runToAngle(double goalRad) {
+  double measured = getAngleRad(); // 0 = 水平
+  double fb = pid.calculate(measured, goalRad);
+  var sp = pid.getSetpoint();      // 用設定點，不是 goal
+  double volts = fb + ff.calculate(sp.position, sp.velocity);
+  motor.setVoltage(volts);
+}
+
+// 切換目標前，先把 profile 起點重設為目前狀態，避免突跳
+public void resetProfile() {
+  pid.reset(getAngleRad(), getVelocityRadPerSec());
+}`;
+  $("codeCtre").innerHTML = hl(ctre);
+  $("codeWpi").innerHTML = hl(wpi);
+}
+
+/* ---------- simulation ---------- */
+const SIM_IDS = ["s_kS","s_kG","s_kV","s_kA","s_kP","s_kI","s_kD","s_loop","s_from","s_to","s_v","s_a","s_mass","s_fric","s_delay","s_dist"];
+function loadCalcIntoSim(){
+  const r = R, K = r.K[$("s_loop").value];
+  $("s_kS").value = r.kS.toFixed(3); $("s_kG").value = r.kG.toFixed(3);
+  $("s_kV").value = (r.kV*TAU).toFixed(3); $("s_kA").value = (r.kA*TAU).toFixed(4);
+  $("s_kP").value = (K[0]*TAU).toFixed(2); $("s_kD").value = (K[1]*TAU).toFixed(3); $("s_kI").value = "0";
+  $("s_v").value = (r.vProf/TAU).toFixed(3); $("s_a").value = (r.aProf/TAU).toFixed(2);
+}
+function trapezoid(D, v, a){
+  const s = Math.sign(D)||1, d = Math.abs(D);
+  let ta = v/a, da = 0.5*a*ta*ta, tc;
+  if (2*da > d){ ta = Math.sqrt(d/a); v = a*ta; da = d/2; tc = 0; } else tc = (d-2*da)/v;
+  const T = 2*ta + tc;
+  return { T, at(t){
+    if (t<=0) return {p:0,v:0,a:0};
+    if (t<ta) return {p:s*0.5*a*t*t, v:s*a*t, a:s*a};
+    if (t<ta+tc) return {p:s*(da+v*(t-ta)), v:s*v, a:0};
+    if (t<T){ const u=T-t; return {p:s*(d-0.5*a*u*u), v:s*a*u, a:-s*a}; }
+    return {p:s*d, v:0, a:0};
+  }};
+}
+let simData = null;
+function runSim(){
+  const r = R; if (!r) return;
+  const kS=num("s_kS"), kG=num("s_kG"), kV=num("s_kV")/TAU, kA=num("s_kA")/TAU,
+        kP=num("s_kP")/TAU, kI=num("s_kI")/TAU, kD=num("s_kD")/TAU;
+  const Tc = $("s_loop").value==="talon" ? 0.001 : 0.02;
+  const th0 = num("s_from")*D2R, th1 = num("s_to")*D2R;
+  const vmax = Math.max(0.01,num("s_v"))*TAU, amax = Math.max(0.01,num("s_a"))*TAU;
+  const massMul = Math.max(0.05,num("s_mass")), fricV = Math.max(0,num("s_fric")), delay = Math.max(0,num("s_delay"))/1000, dist = num("s_dist");
+  const mr = r.mr*massMul, J = r.J*massMul;
+  const torquePerAmp = r.den;                     // η·N·G·Kt
+  const tauFric = fricV*r.den/r.Rw;
+  const prof = trapezoid(th1-th0, vmax, amax);
+  const t0 = 0.25, tDist = 2.2, Tend = 3.0, dt = 0.0002;
+  let th = th0, w = 0, integ = 0, u = 0, nextCtrl = 0, lastI = 0;
+  const hist = []; // delayed measurement buffer
+  const out = {t:[],sp:[],th:[],u:[],I:[],err:[]};
+  let recNext = 0;
+  const steps = Math.round(Tend/dt);
+  for (let i=0;i<=steps;i++){
+    const t = i*dt;
+    hist.push([t,th,w]);
+    if (t >= nextCtrl - 1e-12){
+      nextCtrl += Tc;
+      let mth = th, mw = w;
+      if (delay>0){ const target = t-delay; let k = hist.length-1; while(k>0 && hist[k][0]>target) k--; mth = hist[k][1]; mw = hist[k][2]; }
+      while (hist.length > 2 && hist[0][0] < t - delay - 0.05) hist.shift();
+      const sp = prof.at(t-t0); const spP = th0+sp.p;
+      const e = spP - mth, ed = sp.v - mw;
+      const ff = kS*Math.sign(sp.v) + kG*Math.cos(spP) + kV*sp.v + kA*sp.a;
+      let uu = ff + kP*e + kI*integ + kD*ed;
+      const sat = Math.abs(uu) >= 12;
+      if (!sat || Math.sign(e)!==Math.sign(uu)) integ += e*Tc;   // simple anti-windup
+      uu = ff + kP*e + kI*integ + kD*ed;
+      u = Math.max(-12, Math.min(12, uu));
+    }
+    // plant
+    let I = (u - r.G*w/r.Kv)/r.Rw;
+    I = Math.max(-r.Ilim, Math.min(r.Ilim, I));
+    lastI = I;
+    const tauM = torquePerAmp*I;
+    const tauD = t >= tDist ? -Math.abs(dist) : 0;
+    const net = tauM - mr*g0*Math.cos(th) + tauD;
+    let alpha;
+    if (Math.abs(w) < 1e-4 && Math.abs(net) <= tauFric){ alpha = 0; w = 0; }
+    else alpha = (net - tauFric*Math.sign(Math.abs(w)<1e-4 ? net : w))/J;
+    const wn = w + alpha*dt;
+    if (w !== 0 && Math.sign(wn) !== Math.sign(w) && Math.abs(net) <= tauFric) w = 0; else w = wn;
+    th += w*dt;
+    if (t >= recNext - 1e-12){
+      recNext += 0.004;
+      const spP = th0 + prof.at(t-t0).p;
+      out.t.push(t); out.sp.push(spP*R2D); out.th.push(th*R2D); out.u.push(u); out.I.push(lastI); out.err.push((spP-th)*R2D);
+    }
+  }
+  // metrics
+  const tEnd = t0 + prof.T, dir = Math.sign(th1-th0)||1;
+  let over = 0, lastOut = tEnd, peakU = 0, peakI = 0, maxTrack = 0, distDev = 0;
+  for (let i=0;i<out.t.length;i++){
+    const t = out.t[i];
+    peakU = Math.max(peakU, Math.abs(out.u[i])); peakI = Math.max(peakI, Math.abs(out.I[i]));
+    if (t < tDist){
+      if (t>=t0 && t<=tEnd) maxTrack = Math.max(maxTrack, Math.abs(out.err[i]));
+      if (t >= t0) over = Math.max(over, (out.th[i]-th1*R2D)*dir);
+      if (t >= tEnd && Math.abs(out.err[i]) > 1) lastOut = t;
+      if (t < tEnd && Math.abs(out.err[i]) > 1) lastOut = tEnd;
+    } else distDev = Math.max(distDev, Math.abs(out.err[i]));
+  }
+  const idxPre = out.t.findIndex(t => t >= tDist-0.01);
+  const ssErr = out.err[Math.max(0,idxPre)];
+  const settled = Math.abs(ssErr) <= 1;
+  const finalErr = out.err[out.err.length-1];
+  simData = {out, tEnd, t0, tDist, th0:th0*R2D, th1:th1*R2D};
+  const cls = (v, a, b) => v <= a ? "ok" : v <= b ? "wn" : "bd";
+  $("metrics").innerHTML = [
+    ["運動中最大追蹤誤差", fmt(maxTrack,2)+"°", cls(maxTrack,2,6)],
+    ["超越量", fmt(Math.max(0,over),2)+"°", cls(Math.max(0,over),0.5,3)],
+    ["到位時間（進入 ±1°）", settled ? "+"+fmt(Math.max(0,lastOut-tEnd)*1000,0)+" ms" : "未到位", settled ? cls(lastOut-tEnd,0.1,0.4) : "bd"],
+    ["外力前穩態誤差", fmt(ssErr,2)+"°", cls(Math.abs(ssErr),0.3,1)],
+    ["外力後最大偏移 / 最終", fmt(distDev,1)+"° / "+fmt(finalErr,2)+"°", cls(Math.abs(finalErr),0.3,1)],
+    ["峰值電壓 / 電流", fmt(peakU,1)+" V / "+fmt(peakI,0)+" A", peakU>=11.99||peakI>=r.Ilim-0.01 ? "wn" : "ok"]
+  ].map(m => `<div class="chk"><span class="k">${m[0]}</span><span class="v ${m[2]}">${m[1]}</span></div>`).join("");
+  drawAll();
+  const s = {}; SIM_IDS.forEach(id => s[id] = $(id).value); store.set("armtuner.sim", s);
+}
+
+/* ---------- charts ---------- */
+function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function niceTicks(lo, hi, n){
+  const span = hi-lo || 1, raw = span/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1,2,2.5,5,10].map(x=>x*mag).find(s => span/s <= n) || 10*mag;
+  const ticks = []; for (let v = Math.ceil(lo/step)*step; v <= hi+1e-9; v += step) ticks.push(+v.toFixed(10));
+  return {ticks, step};
+}
+function plot(canvas, series, opts){
+  const dpr = window.devicePixelRatio||1, W = canvas.clientWidth, H = canvas.height_css || (canvas.height_css = canvas.height);
+  canvas.width = W*dpr; canvas.height = H*dpr; canvas.style.height = H+"px";
+  const c = canvas.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  const padL = 44, padR = 10, padT = 8, padB = 22;
+  const t = simData.out.t, x0 = 0, x1 = t[t.length-1];
+  let lo = Infinity, hi = -Infinity;
+  series.forEach(s => s.y.forEach(v => { if (isFinite(v)){ lo = Math.min(lo,v); hi = Math.max(hi,v);} }));
+  if (opts.sym){ const m = Math.max(Math.abs(lo),Math.abs(hi), opts.minSpan||1); lo = -m; hi = m; }
+  const pad = (hi-lo)*0.08 || 1; lo -= pad; hi += pad;
+  const X = v => padL + (v-x0)/(x1-x0)*(W-padL-padR), Y = v => padT + (hi-v)/(hi-lo)*(H-padT-padB);
+  c.font = "11px JetBrains Mono, monospace"; c.textBaseline = "middle";
+  const rule = css("--rule"), muted = css("--muted");
+  const yt = niceTicks(lo, hi, opts.yTicks||5);
+  yt.ticks.forEach(v => { c.strokeStyle = rule; c.lineWidth = 1; c.beginPath(); c.moveTo(padL, Y(v)); c.lineTo(W-padR, Y(v)); c.stroke();
+    c.fillStyle = muted; c.textAlign = "right"; c.fillText(String(+v.toFixed(2)), padL-6, Y(v)); });
+  const xt = niceTicks(x0, x1, 6);
+  c.textAlign = "center"; c.textBaseline = "top";
+  xt.ticks.forEach(v => { c.fillStyle = muted; c.fillText(v.toFixed(1)+"s", X(v), H-padB+6); });
+  // markers: profile end & disturbance
+  [[simData.tEnd,"曲線結束"],[simData.tDist,"外力"]].forEach(([tm,lab]) => {
+    c.strokeStyle = muted; c.setLineDash([2,4]); c.beginPath(); c.moveTo(X(tm),padT); c.lineTo(X(tm),H-padB); c.stroke(); c.setLineDash([]);
+    if (opts.labels){ c.fillStyle = muted; c.textAlign = "left"; c.textBaseline = "top"; c.fillText(lab, X(tm)+4, padT+2); }
+  });
+  if (lo < 0 && hi > 0 && opts.zero){ c.strokeStyle = muted; c.lineWidth = 1; c.beginPath(); c.moveTo(padL,Y(0)); c.lineTo(W-padR,Y(0)); c.stroke(); }
+  series.forEach(s => {
+    c.strokeStyle = s.color; c.lineWidth = s.w||1.8; c.setLineDash(s.dash||[]); c.beginPath();
+    s.y.forEach((v,i) => { const px = X(t[i]), py = Y(v); i ? c.lineTo(px,py) : c.moveTo(px,py); });
+    c.stroke(); c.setLineDash([]);
+  });
+}
+function drawAll(){
+  if (!simData) return;
+  const o = simData.out, acc = css("--accent"), amb = css("--amber"), mut = css("--muted");
+  plot($("cPos"), [{y:o.sp, color:amb, dash:[6,4], w:1.6},{y:o.th, color:acc, w:2}], {labels:true, yTicks:6});
+  plot($("cErr"), [{y:o.err, color:acc, w:1.6}], {sym:true, zero:true, minSpan:1, yTicks:4});
+  plot($("cVolt"), [{y:o.I.map(v=>v/10), color:mut, w:1.2},{y:o.u, color:acc, w:1.6}], {zero:true, yTicks:4});
+}
+
+/* ---------- wiring ---------- */
+function restore(){
+  const c = store.get("armtuner.calc");
+  if (c) { CALC_IDS.forEach(id => { if (c[id] != null) $(id).value = c[id]; }); if (c.loop) loopSel = c.loop; }
+  document.querySelectorAll("[data-loop]").forEach(b => b.setAttribute("aria-pressed", b.dataset.loop===loopSel));
+  compute();
+  const s = store.get("armtuner.sim");
+  if (s) SIM_IDS.forEach(id => { if (s[id] != null && s[id] !== "") $(id).value = s[id]; });
+  if (!s || !s.s_kP) loadCalcIntoSim();
+  runSim();
+}
+$("calcForm").addEventListener("input", compute);
+$("calcForm").addEventListener("submit", e => e.preventDefault());
+$("simForm").addEventListener("input", runSim);
+$("simForm").addEventListener("submit", e => e.preventDefault());
+document.querySelectorAll("[data-loop]").forEach(b => b.addEventListener("click", () => {
+  loopSel = b.dataset.loop;
+  document.querySelectorAll("[data-loop]").forEach(x => x.setAttribute("aria-pressed", x===b));
+  compute();
+}));
+$("loadCalc").addEventListener("click", () => { loadCalcIntoSim(); runSim(); });
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
+  loadCalcIntoSim();
+  if (b.dataset.preset === "pidonly"){ ["s_kS","s_kG","s_kV","s_kA"].forEach(id => $(id).value = "0"); }
+  if (b.dataset.preset === "ffonly"){ ["s_kP","s_kI","s_kD"].forEach(id => $(id).value = "0"); }
+  runSim();
+}));
+$("s_loop").addEventListener("change", () => { const K = R.K[$("s_loop").value]; $("s_kP").value = (K[0]*TAU).toFixed(2); $("s_kD").value = (K[1]*TAU).toFixed(3); runSim(); });
+document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", () => {
+  const el = $(b.dataset.copy), text = el.textContent;
+  const done = () => { b.textContent = "已複製"; setTimeout(() => b.textContent = "複製", 1400); };
+  const fallback = () => { const rg = document.createRange(); rg.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); b.textContent = "已選取，請按複製"; setTimeout(() => b.textContent = "複製", 2000); };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch(e){ fallback(); }
+}));
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(drawAll, 80); });
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch(e){}
+new MutationObserver(drawAll).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+// toc highlight
+const links = [...document.querySelectorAll("#toc a")];
+const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting){ links.forEach(a => a.classList.toggle("on", a.getAttribute("href")==="#"+en.target.id)); } }), {rootMargin:"-30% 0px -60% 0px"});
+document.querySelectorAll("main section").forEach(s => io.observe(s));
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+restore();
+})();
+</script>
+
+</body></html>
